@@ -1,3 +1,4 @@
 streamlit
-gTTS
 PyPDF2
+edge-tts
+asyncio
