@@ -90,7 +90,7 @@ with col2:
     st.markdown("### 🔊 Audio Synthesis")
     
     # FIXED: Reliable Visualizer GIF for Main Section
-    st.image("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzRmJmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/UXit9hA88h4Nog9Rsh/giphy.gif", 
+    st.image("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW04a3YwMTZ6cDJqNmIwM3NrdnN6bmxxNzBqNjgxbDF6ZmhodGphcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ZoAa7lsmym6UE/giphy.gif", 
              use_container_width=True)
     
     if st.button("🚀 Generate AI Voice"):
