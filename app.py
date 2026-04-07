@@ -4,145 +4,74 @@ import asyncio
 import PyPDF2
 import io
 
-# 1. Page Configuration
-st.set_page_config(
-    page_title="PraxisPages Pro", 
-    page_icon="🎓", 
-    layout="wide"
-)
+# 1. Professional Page Styling
+st.set_page_config(page_title="PraxisPages Pro", page_icon="🎓", layout="wide")
 
-# 2. Force-Injected CSS & Particle Engine
-# Note: z-index is set to 999999 to stay ABOVE all Streamlit elements
+# Custom CSS for a "Premium" Look
 st.markdown("""
     <style>
-    .stApp {
-        background: #0f172a;
-        color: #f8fafc;
-    }
-    
-    /* The Canvas Container */
-    #particle-canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none; /* Crucial: allows clicking buttons 'through' the dots */
-        z-index: 999999;
-    }
-
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white;
-        border: none;
-        transition: 0.3s;
-    }
+    .main { background-color: #f0f2f6; }
+    .stButton>button { width: 100%; border-radius: 20px; height: 3em; background-color: #4A90E2; color: white; }
+    .stTextArea>div>div>textarea { border-radius: 15px; }
     </style>
-
-    <canvas id="particle-canvas"></canvas>
-
-    <script>
-    const canvas = document.getElementById('particle-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let mouse = { x: -100, y: -100 };
-    const particles = [];
-    const particleCount = 100;
-
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Track Mouse & Touch
-    const updateMouse = (e) => {
-        if (e.touches) {
-            mouse.x = e.touches[0].clientX;
-            mouse.y = e.touches[0].clientY;
-        } else {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        }
-    };
-    
-    // Attach to window to ensure it captures movement everywhere
-    window.addEventListener('mousemove', updateMouse);
-    window.addEventListener('touchmove', updateMouse);
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.size = Math.random() * 3 + 1; // Bigger dots
-            this.ease = 0.05 + Math.random() * 0.1; // Smooth delay
-        }
-
-        update() {
-            let dx = mouse.x - this.x;
-            let dy = mouse.y - this.y;
-            this.x += dx * this.ease;
-            this.y += dy * this.ease;
-        }
-
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 255, 255, 1)'; // Solid white
-            ctx.fill();
-        }
-    }
-
-    for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, width, height);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-        requestAnimationFrame(animate);
-    }
-    animate();
-    </script>
     """, unsafe_allow_html=True)
 
-# 3. Main App Logic (Rest of your code)
 st.title("🎓 PraxisPages: AI Study Narrator")
-st.markdown("Move your mouse or touch the screen to see the particle movement.")
+st.info("Convert your PDFs and Notes into High-Quality Human Voices for on-the-go learning.")
 
-col1, col2 = st.columns(2)
+# 2. Sidebar for Settings
+with st.sidebar:
+    st.header("⚙️ Audio Settings")
+    voice_option = st.selectbox("Select Narrator Voice:", 
+                                ["en-IN-NeerjaNeural (Indian English)", 
+                                 "en-US-GuyNeural (Deep Male)", 
+                                 "en-GB-SoniaNeural (Professional Female)"])
+    
+    voice_id = voice_option.split(" ")[0]
+    speed_pct = st.slider("Playback Speed", 0.5, 2.0, 1.0, 0.1)
+    speed_str = f"{int((speed_pct - 1) * 100):+d}%"
+
+# 3. Main Interface
+col1, col2 = st.columns([1, 1])
+
 text_to_process = ""
 
 with col1:
-    option = st.radio("Input:", ("Text", "PDF"))
-    if option == "Text":
-        text_to_process = st.text_area("Paste here:", height=300)
+    option = st.radio("Input Method:", ("Paste Study Notes", "Upload Lecture PDF"))
+    
+    if option == "Paste Study Notes":
+        text_to_process = st.text_area("Enter your content:", placeholder="Paste your text here...", height=300)
     else:
-        uploaded_file = st.file_uploader("Upload PDF", type="pdf")
-        if uploaded_file:
-            reader = PyPDF2.PdfReader(uploaded_file)
-            for page in reader.pages:
-                text_to_process += page.extract_text()
+        # Combined Uploader (Works for both Laptop and Mobile)
+        uploaded_file = st.file_uploader("Upload or Tap to select a Study PDF", type="pdf")
+        if uploaded_file is not None:
+            try:
+                pdf_buffer = io.BytesIO(uploaded_file.read())
+                reader = PyPDF2.PdfReader(pdf_buffer)
+                for page in reader.pages:
+                    text_to_process += page.extract_text()
+                st.success(f"✅ Loaded {len(reader.pages)} pages successfully!")
+            except Exception as e:
+                st.error("Error reading PDF. Please try again.")
 
 with col2:
-    voice = st.selectbox("Voice", ["en-IN-NeerjaNeural", "en-US-GuyNeural"])
-    if st.button("Generate Audio"):
-        if text_to_process:
-            async def run_tts():
-                communicate = edge_tts.Communicate(text_to_process, voice)
-                data = b""
+    st.subheader("🔊 Audio Preview")
+    if st.button("Generate Human-Like Audio"):
+        if text_to_process.strip():
+            async def generate_audio():
+                communicate = edge_tts.Communicate(text_to_process, voice_id, rate=speed_str)
+                audio_data = b""
                 async for chunk in communicate.stream():
                     if chunk["type"] == "audio":
-                        data += chunk["data"]
-                return data
-            
-            with st.spinner("Processing..."):
-                audio_bytes = asyncio.run(run_tts())
-                st.audio(audio_bytes)
+                        audio_data += chunk["data"]
+                return audio_data
+
+            with st.spinner("AI is synthesizing voice..."):
+                audio_content = asyncio.run(generate_audio())
+                st.audio(audio_content, format="audio/mp3")
+                st.download_button("📥 Download MP3 for WhatsApp", 
+                                   data=audio_content, 
+                                   file_name="StudyNotes_Pro.mp3",
+                                   mime="audio/mp3")
+        else:
+            st.warning("Please enter text or upload a PDF first.")
