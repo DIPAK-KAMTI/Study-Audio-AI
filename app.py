@@ -60,7 +60,7 @@ with st.sidebar:
     st.markdown("### 🚶 Walk and Learn")
     
     # FIXED: High-reliability GIF for Sidebar
-    st.image("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHIwdWswYXBqbmx4bm5ndHVsZ3VnZnZ4bmh4eGZ5bmx4eGZ5bmx4ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eKNCR7qhO797y/giphy.gif", 
+    st.image("https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHJnZWdnZjZmYmcyNGNlMHNjcW40cHZybW5nZzFsOGRtbGJleWluaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10YpWPBU7GAYwM/giphy.gif", 
              caption="Keep moving, keep learning.")
 
 # 4. Main Section
