@@ -5,7 +5,7 @@ import PyPDF2
 import io
 
 # 1. Page Setup
-st.set_page_config(page_title="PraxisPages Pro", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="AUDIO Pro", page_icon="🎓", layout="wide")
 
 # 2. Premium CSS
 st.markdown("""
@@ -41,12 +41,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎓 PraxisPages: AI Study Narrator")
+st.title("🎓 Audily: AI Study Narrator")
 st.markdown("---")
 
 # 3. Sidebar: Settings
 with st.sidebar:
-    st.header("⚙️ Audio Controls")
+    st.header("⚙️ Audio Speed Controls")
     voice_option = st.selectbox("Narrator Voice", 
                                 ["en-IN-NeerjaNeural (Indian English)", 
                                  "en-US-GuyNeural (Deep Male)", 
@@ -69,7 +69,7 @@ text_to_process = ""
 
 with col1:
     st.markdown("### 📝 Source Material")
-    option = st.radio("Choose Input Type:", ("Paste Notes", "Upload Study PDF"))
+    option = st.radio("Choose Input Type:", ("Paste Notes", "Upload Text PDF"))
     
     if option == "Paste Notes":
         text_to_process = st.text_area("Notes Content", height=300, placeholder="Type or paste your notes here...")
@@ -82,9 +82,9 @@ with col1:
                     content = page.extract_text()
                     if content:
                         text_to_process += content
-                st.success("✅ PDF Content Loaded")
+                st.success("✅ PDF Content Loaded Successfully")
             except Exception:
-                st.error("Error reading PDF.")
+                st.error("Error reading PDF...")
 
 with col2:
     st.markdown("### 🔊 Audio Synthesis")
@@ -117,4 +117,4 @@ with col2:
             st.warning("⚠️ Please provide text first.")
 
 st.markdown("---")
-st.caption("PraxisPages | Developed by Dipak | Brainware University")
+st.caption("Audily | By Dipak | Brainware University")
