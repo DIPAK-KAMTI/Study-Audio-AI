@@ -46,7 +46,7 @@ st.markdown("---")
 
 # 3. Sidebar: Settings
 with st.sidebar:
-    st.header("⚙️ Audio Speed Controls")
+    st.header("⚙️ Audio Controls")
     voice_option = st.selectbox("Narrator Voice", 
                                 ["en-IN-NeerjaNeural (Indian English)", 
                                  "en-US-GuyNeural (Deep Male)", 
