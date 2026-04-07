@@ -48,8 +48,8 @@ with st.sidebar:
     
     st.markdown("---")
     # NEW: Walking & Listening Animation instead of Student Info
-    st.markdown("### 🚶 Study on the Go")
-    st.image("https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnYwaHF6Z3B3bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/l41lTfuxV3Xy9Uu5u/giphy.gif", caption="Listen while you walk!")
+    st.markdown("### 🚶 Walk and Learn")
+    st.image("https://tenor.com/bim3h.gif", caption="Listen while you walk!")
 
 # 4. Main Section
 col1, col2 = st.columns([1, 1], gap="large")
