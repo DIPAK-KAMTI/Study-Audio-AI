@@ -49,8 +49,15 @@ with st.sidebar:
     st.markdown("---")
     # NEW: Walking & Listening Animation instead of Student Info
     st.markdown("### 🚶 Walk and Learn")
-    st.image("https://tenor.com/bim3h.gif", caption="Listen while you walk!")
-
+st.markdown("""
+    <div style="display: flex; justify-content: center;">
+        <div class="tenor-gif-embed" data-postid="16732505" data-share-method="host" data-aspect-ratio="1.2749" data-width="100%">
+            <a href="https://tenor.com/view/christian-bale-american-psycho-walk-jam-gif-16732505">Christian Bale American Psycho GIF</a>
+        </div>
+        <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+    </div>
+    <p style="text-align: center; color: gray;">Listen while you walk!</p>
+    """, unsafe_allow_html=True)
 # 4. Main Section
 col1, col2 = st.columns([1, 1], gap="large")
 text_to_process = ""
