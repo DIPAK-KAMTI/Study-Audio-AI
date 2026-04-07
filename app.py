@@ -70,3 +70,17 @@ with col2:
             st.download_button("📥 Download MP3 for WhatsApp", data=audio_content, file_name="StudyNotes_Pro.mp3")
         else:
             st.warning("Please enter text or upload a PDF first.")
+
+# Updated File Uploader for Mobile Compatibility
+uploaded_file = st.file_uploader("Tap to select a Study PDF", type="pdf", key="mobile_pdf_picker")
+
+if uploaded_file is not None:
+    try:
+        # We use a memory buffer for mobile stability
+        pdf_buffer = io.BytesIO(uploaded_file.read())
+        reader = PyPDF2.PdfReader(pdf_buffer)
+        for page in reader.pages:
+            text_to_process += page.extract_text()
+        st.success(f"✅ Loaded {len(reader.pages)} pages from your phone!")
+    except Exception as e:
+        st.error("Error reading PDF. Try a different file.")
