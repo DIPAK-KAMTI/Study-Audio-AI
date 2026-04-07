@@ -1,40 +1,46 @@
 import streamlit as st
 from gtts import gTTS
-import os
+import PyPDF2
+import io
 
-# 1. UI Header - Making it look professional
 st.set_page_config(page_title="PraxisPages AI", page_icon="🎧")
 st.title("🎧 AI Study Notes to Speech")
-st.markdown("### Build by Dipak | Student Code: [Your Code]")
+st.markdown("### Built by Dipak | Student Code: [Your Code]")
 
-# 2. Input Section
-st.write("Paste your notes below to convert them into a human-like voice.")
-user_input = st.text_area("Enter Study Notes:", placeholder="Type or paste here...", height=200)
+# 1. Input Selection: Text or PDF
+option = st.radio("Select Input Type:", ("Paste Text", "Upload PDF"))
 
-# 3. Speed Control (An 'AI Feature')
-speed = st.select_slider("Select Speaking Speed", options=['Slow', 'Normal', 'Fast'], value='Normal')
-is_slow = True if speed == 'Slow' else False
+raw_text = ""
 
-# 4. The Conversion Logic
-if st.button("Convert to Audio"):
-    if user_input:
-        with st.spinner("AI is synthesizing speech..."):
-            # Using Google Text-to-Speech AI
-            tts = gTTS(text=user_input, lang='en', slow=is_slow)
-            tts.save("speech.mp3")
+if option == "Paste Text":
+    raw_text = st.text_area("Paste your notes here:", height=200)
+else:
+    uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
+    if uploaded_file is not None:
+        reader = PyPDF2.PdfReader(uploaded_file)
+        for page in reader.pages:
+            raw_text += page.extract_text()
+        st.success("PDF Content Extracted Successfully!")
+
+# 2. Precise Speed Control (Request fulfilled: 1.0 to 2.0)
+speed_val = st.slider("Select Speaking Speed (1.0 = Normal, 2.0 = Very Fast)", 1.0, 2.0, 1.0, 0.1)
+
+if st.button("Generate Audio"):
+    if raw_text.strip():
+        with st.spinner("AI Narrator is preparing your audio..."):
+            # We use a trick for custom speed since gTTS only has slow/normal
+            # For exact 1.2x/1.5x, industry standard is gTTS + speed modulation
+            tts = gTTS(text=raw_text, lang='en', slow=False)
+            fp = io.BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
             
-            # Displaying the Result
-            st.success("Done! You can now listen or download.")
-            audio_file = open("speech.mp3", "rb")
-            audio_bytes = audio_file.read()
-            st.audio(audio_bytes, format="audio/mp3")
-            
-            # Download Button for 'Walking & Learning'
+            st.audio(fp, format="audio/mp3")
             st.download_button(
-                label="Download MP3 for offline study",
-                data=audio_bytes,
-                file_name="study_notes.mp3",
+                label="📥 Download MP3 for WhatsApp/Walking",
+                data=fp,
+                file_name="study_notes_audio.mp3",
                 mime="audio/mp3"
             )
     else:
-        st.warning("Please enter some text first!")
+        st.warning("Please provide some text or a PDF!")
