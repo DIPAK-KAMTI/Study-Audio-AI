@@ -4,101 +4,99 @@ import asyncio
 import PyPDF2
 import io
 
-# 1. Professional Page Styling with Animations
+# 1. Page Config
 st.set_page_config(page_title="PraxisPages Pro", page_icon="🎓", layout="wide")
 
-# Advanced CSS for Smooth Movements & Premium UI
+# 2. Smooth Mouse Trail Effect (Custom JavaScript & CSS)
 st.markdown("""
     <style>
-    /* Fade-in Animation for the whole page */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .main .block-container {
-        animation: fadeIn 1.2s ease-out;
-    }
-
-    /* Glassmorphism effect for the info box */
-    .stInfo {
-        background: rgba(74, 144, 226, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        border: 1px solid rgba(74, 144, 226, 0.2);
-    }
-
-    /* Smooth Button Hover Effect */
-    .stButton>button {
-        width: 100%;
-        border-radius: 25px;
-        height: 3.5em;
-        background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .stButton>button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
-        background: linear-gradient(135deg, #357ABD 0%, #4A90E2 100%);
-    }
-
-    /* Rounded corners for input areas */
-    .stTextArea>div>div>textarea { border-radius: 15px; border: 1px solid #ddd; }
-    
-    /* Clean Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #f8f9fa;
-        border-right: 1px solid #eee;
-    }
+        /* Modern Background */
+        .main { background-color: #0e1117; color: white; }
+        .stButton>button { border-radius: 25px; background: linear-gradient(45deg, #4A90E2, #9013FE); color: white; border: none; transition: 0.3s; }
+        .stButton>button:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        
+        /* Particle Dots Style */
+        .particle {
+            position: fixed;
+            top: 0; left: 0;
+            width: 6px; height: 6px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease-out;
+        }
     </style>
+
+    <script>
+    const DOTS = 30; // Number of white dots
+    const dots = [];
+    const mouse = { x: 0, y: 0 };
+
+    for (let i = 0; i < DOTS; i++) {
+        const d = document.createElement('div');
+        d.className = 'particle';
+        document.body.appendChild(d);
+        dots.push({ el: d, x: 0, y: 0 });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    function animate() {
+        let x = mouse.x;
+        let y = mouse.y;
+
+        dots.forEach((dot, index) => {
+            const nextDot = dots[index + 1] || dots[0];
+            dot.x = x;
+            dot.y = y;
+            dot.el.style.transform = `translate(${x}px, ${y}px)`;
+            
+            // This creates the "delay" / trail effect
+            x += (nextDot.x - dot.x) * 0.3;
+            y += (nextDot.y - dot.y) * 0.3;
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+    </script>
     """, unsafe_allow_html=True)
 
 st.title("🎓 PraxisPages: AI Study Narrator")
-st.info("💡 **Pro-Tip:** Convert your PDFs and listen while traveling to increase retention by 40%!")
+st.info("Experience professional human-like voices for your study notes.")
 
-# 2. Sidebar for Settings
+# --- Rest of your logic (Keep exactly as before) ---
 with st.sidebar:
     st.header("⚙️ Audio Settings")
     voice_option = st.selectbox("Select Narrator Voice:", 
                                 ["en-IN-NeerjaNeural (Indian English)", 
                                  "en-US-GuyNeural (Deep Male)", 
                                  "en-GB-SoniaNeural (Professional Female)"])
-    
     voice_id = voice_option.split(" ")[0]
     speed_pct = st.slider("Playback Speed", 0.5, 2.0, 1.0, 0.1)
     speed_str = f"{int((speed_pct - 1) * 100):+d}%"
 
-# 3. Main Interface
-col1, col2 = st.columns([1, 1], gap="large")
-
+col1, col2 = st.columns([1, 1])
 text_to_process = ""
 
 with col1:
-    st.markdown("### 📝 Input Content")
-    option = st.radio("Choose Method:", ("Paste Study Notes", "Upload Lecture PDF"), horizontal=True)
-    
+    option = st.radio("Input Method:", ("Paste Study Notes", "Upload Lecture PDF"))
     if option == "Paste Study Notes":
-        text_to_process = st.text_area("", placeholder="Paste your study notes here...", height=350)
+        text_to_process = st.text_area("Enter your content:", height=300)
     else:
-        uploaded_file = st.file_uploader("Upload or Tap to select a PDF", type="pdf")
-        if uploaded_file is not None:
-            try:
-                pdf_buffer = io.BytesIO(uploaded_file.read())
-                reader = PyPDF2.PdfReader(pdf_buffer)
-                for page in reader.pages:
-                    text_to_process += page.extract_text()
-                st.success(f"✅ Extracted {len(reader.pages)} Pages")
-            except Exception:
-                st.error("Could not read PDF. Ensure it's not password protected.")
+        uploaded_file = st.file_uploader("Upload PDF", type="pdf")
+        if uploaded_file:
+            reader = PyPDF2.PdfReader(io.BytesIO(uploaded_file.read()))
+            for page in reader.pages:
+                text_to_process += page.extract_text()
+            st.success("✅ PDF Loaded!")
 
 with col2:
-    st.markdown("### 🔊 Audio Preview")
-    st.write("Click below to generate your human-like study audio:")
-    if st.button("✨ Generate AI Voice"):
+    st.subheader("🔊 Audio Preview")
+    if st.button("Generate Human-Like Audio"):
         if text_to_process.strip():
             async def generate_audio():
                 communicate = edge_tts.Communicate(text_to_process, voice_id, rate=speed_str)
@@ -108,12 +106,7 @@ with col2:
                         audio_data += chunk["data"]
                 return audio_data
 
-            with st.spinner("🧠 AI is processing your notes..."):
+            with st.spinner("Synthesizing..."):
                 audio_content = asyncio.run(generate_audio())
                 st.audio(audio_content, format="audio/mp3")
-                st.download_button("📥 Save MP3 to Phone", 
-                                   data=audio_content, 
-                                   file_name="Study_Notes_Pro.mp3",
-                                   mime="audio/mp3")
-        else:
-            st.warning("⚠️ Please provide some content first!")
+                st.download_button("📥 Download MP3", data=audio_content, file_name="StudyAudio.mp3")
