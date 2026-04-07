@@ -7,26 +7,39 @@ import io
 # 1. Page Setup
 st.set_page_config(page_title="PraxisPages Pro", page_icon="🎓", layout="wide")
 
-# 2. Premium CSS
+# 2. Premium CSS (Updated to fix text colors and sidebar)
 st.markdown("""
     <style>
         .stApp {
             background: linear-gradient(-45deg, #0f0c29, #24243e);
             color: white;
         }
-        h1, h2, h3, p, label { color: #ffffff !important; }
+        h1, h2, h3, p, label, .stMarkdown { color: #ffffff !important; }
+        
+        /* Button Styling */
         .stButton>button {
             border-radius: 50px;
             background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-            color: #000;
+            color: #000 !important;
             font-weight: bold;
             border: none;
             transition: 0.3s;
+            padding: 0.5rem 2rem;
         }
-        .stButton>button:hover { transform: scale(1.02); }
-        /* Style for Sidebar Animation */
+        .stButton>button:hover { transform: scale(1.05); box-shadow: 0px 0px 15px #4facfe; }
+        
+        /* Sidebar styling */
         [data-testid="stSidebar"] {
-            background-color: rgba(15, 12, 41, 0.8);
+            background-color: rgba(15, 12, 41, 0.9);
+        }
+        
+        /* Style for the GIF container */
+        .gif-container {
+            display: flex;
+            justify-content: center;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
         }
     </style>
     """, unsafe_allow_html=True)
@@ -34,7 +47,7 @@ st.markdown("""
 st.title("🎓 PraxisPages: AI Study Narrator")
 st.markdown("---")
 
-# 3. Sidebar: Settings & Walking Animation
+# 3. Sidebar: Settings
 with st.sidebar:
     st.header("⚙️ Audio Controls")
     voice_option = st.selectbox("Narrator Voice", 
@@ -47,17 +60,13 @@ with st.sidebar:
     speed_str = f"{int((speed_pct - 1) * 100):+d}%"
     
     st.markdown("---")
-    # NEW: Walking & Listening Animation instead of Student Info
     st.markdown("### 🚶 Walk and Learn")
-st.markdown("""
-    <div style="display: flex; justify-content: center;">
-        <div class="tenor-gif-embed" data-postid="16732505" data-share-method="host" data-aspect-ratio="1.2749" data-width="100%">
-            <a href="https://tenor.com/view/christian-bale-american-psycho-walk-jam-gif-16732505">Christian Bale American Psycho GIF</a>
-        </div>
-        <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
-    </div>
-    <p style="text-align: center; color: gray;">Listen while you walk!</p>
-    """, unsafe_allow_html=True)
+    
+    # FIXED GIF: Using direct URL instead of broken Tenor Embed
+    # This shows Patrick Bateman walking with headphones vibe
+    st.image("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Y4eHljbm96eGZ5bmx4eGZ5bmx4eGZ5bmx4eGZ5bmx4eGZ5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/eKNCR7qhO797y/giphy.gif", 
+             caption="Listen while you walk!")
+
 # 4. Main Section
 col1, col2 = st.columns([1, 1], gap="large")
 text_to_process = ""
@@ -71,17 +80,22 @@ with col1:
     else:
         uploaded_file = st.file_uploader("Upload PDF File", type="pdf")
         if uploaded_file:
-            reader = PyPDF2.PdfReader(io.BytesIO(uploaded_file.read()))
-            for page in reader.pages:
-                text_to_process += page.extract_text()
-            st.success("✅ PDF Content Loaded")
+            try:
+                reader = PyPDF2.PdfReader(io.BytesIO(uploaded_file.read()))
+                for page in reader.pages:
+                    content = page.extract_text()
+                    if content:
+                        text_to_process += content
+                st.success("✅ PDF Content Loaded")
+            except Exception as e:
+                st.error("Error reading PDF. Try another file.")
 
 with col2:
     st.markdown("### 🔊 Audio Synthesis")
     
-    # Cleaning up the broken GIF with a clean AI Visualizer
-    st.markdown('<div style="text-align: center;">', unsafe_allow_html=True)
-    st.image("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3I4Y2R4dzB3bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5bmR5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/UXit9hA88h4Nog9Rsh/giphy.gif", width=350)
+    # Visualizer Image
+    st.markdown('<div class="gif-container">', unsafe_allow_html=True)
+    st.image("https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzRmJmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/UXit9hA88h4Nog9Rsh/giphy.gif", use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
     if st.button("🚀 Generate AI Voice"):
@@ -95,8 +109,17 @@ with col2:
                 return audio_data
 
             with st.spinner("AI Narrator is preparing your session..."):
-                audio_content = asyncio.run(generate_audio())
-                st.audio(audio_content, format="audio/mp3")
-                st.download_button("📥 Save MP3 to Phone", data=audio_content, file_name="StudyAudio_Praxis.mp3")
+                try:
+                    audio_content = asyncio.run(generate_audio())
+                    st.audio(audio_content, format="audio/mp3")
+                    st.download_button("📥 Save MP3 to Phone", 
+                                       data=audio_content, 
+                                       file_name="StudyAudio_Praxis.mp3",
+                                       mime="audio/mp3")
+                except Exception as e:
+                    st.error(f"Error: {e}")
         else:
             st.warning("⚠️ Please provide text first.")
+
+st.markdown("---")
+st.caption("PraxisPages | Final Year CSE Project | Developed by Dipak")
